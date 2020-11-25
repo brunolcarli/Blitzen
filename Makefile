@@ -3,3 +3,7 @@ run:
 
 install:
 	pip install -r blitzen/requirements/development.txt
+
+replit_pipeline:
+	make install
+	make run
