@@ -1,5 +1,5 @@
 run:
-	python manage.py runserver 0.0.0.0:8222 --settings=blitzen.settings.common
+	python manage.py runserver 0.0.0.0:8222 --settings=blitzen.settings.development
 
 install:
 	pip install -r blitzen/requirements/development.txt
