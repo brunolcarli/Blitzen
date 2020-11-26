@@ -1,6 +1,6 @@
 import graphene
 from django.conf import settings
-
+from gifty.models import Ong
 
 class CNASType(graphene.ObjectType):
     """
@@ -68,7 +68,17 @@ class ONGType(graphene.ObjectType):
     country = graphene.String(description='Country name.')
     state = graphene.String(description='State name.')
     city = graphene.String(description='City name')
+    geolocation = graphene.Field(
+        GeolocationType,
+        description='ONG location points'
+    )
     description = graphene.String(description='ONG description.')
+
+    def resolve_cnas(self, info, **kwargs):
+        return CNASType(registration_number=self.cnas)
+
+    def resolve_geolocation(self, info, **kwargs):
+        return GeolocationType(latitude=self.latitude, longitude=self.longitude)
 
 
 class ONGConnection(graphene.relay.Connection):
@@ -91,5 +101,5 @@ class Query:
     ongs = graphene.relay.ConnectionField(ONGConnection)
 
     def resolve_ongs(self, info, *kwargs):
-        return [ONGType()]
+        return Ong.objects.all()
 
