@@ -14,9 +14,9 @@
 
 <div align="center">
 
-> [![Version badge](https://img.shields.io/badge/version-0.1.0-silver.svg)]()
+> [![Version badge](https://img.shields.io/badge/version-0.1.0-silver.svg)](https://blitzen.brunolcarli.repl.co/graphql/)
 
->[![GraphQl Badge](https://badgen.net/badge/icon/graphql/pink?icon=graphql&label)]()
+>[![GraphQl Badge](https://badgen.net/badge/icon/graphql/pink?icon=graphql&label)](https://blitzen.brunolcarli.repl.co/graphql/)
 [![Docs Link](https://badgen.net/badge/docs/github_wiki?icon=github)](https://github.com/brunolcarli/Blitzen/wiki)
 
 
@@ -24,4 +24,8 @@
 
 <hr />
 
-## Service under development
+## Demo
+
+[Playground available here.](https://blitzen.brunolcarli.repl.co/graphql/)
+
+## Page under development
