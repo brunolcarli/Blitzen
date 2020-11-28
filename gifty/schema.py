@@ -77,6 +77,9 @@ class ONGType(graphene.ObjectType):
         description='ONG location points'
     )
     description = graphene.String(description='ONG description.')
+    donation_link = graphene.String(
+        description='Link for donation contributions.'
+    )
 
     def resolve_cnas(self, info, **kwargs):
         return CNASType(registration_number=self.cnas)
@@ -184,6 +187,7 @@ class CreateOng(graphene.relay.ClientIDMutation):
             required=True
         )
         description=graphene.String()
+        donation_link=graphene.String()
 
 
     # @access_required  # TODO: authentication
@@ -230,7 +234,8 @@ class CreateOng(graphene.relay.ClientIDMutation):
                 federal_public_utility_certificate=federal_certificate,
                 state_public_utility_certificate=state_certificate,
                 municipal_public_utility_certificate=municipal_certificate,
-                description=kwargs.get('description')
+                description=kwargs.get('description'),
+                donation_link=kwargs.get('donation_link')
             )
 
         except Exception as exception:
