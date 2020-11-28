@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class FederalPublicUtilityCertificate(models.Model):
     """
     Defines a Federal Public Utility Certificate table
@@ -54,4 +53,5 @@ class Ong(models.Model):
     city = models.CharField(max_length=50, null=False, blank=False)
     latitude = models.FloatField()
     longitude = models.FloatField()
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
+    donation_link = models.TextField(null=True, blank=True)
