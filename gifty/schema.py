@@ -1,10 +1,15 @@
 import graphene
 from django.conf import settings
+from graphene_django import DjangoObjectType
+from graphene_django.filter import DjangoFilterConnectionField
 from gifty.models import (Ong, FederalPublicUtilityCertificate, 
                           StatePublicUtilityCertificate,
                           MunicipalPublicUtilityCertificate)
 
 
+##########################################################################
+# Object types
+##########################################################################
 class CNASType(graphene.ObjectType):
     """
     Defines a CNAS register GraphQL structure.
@@ -46,12 +51,28 @@ class GeolocationType(graphene.ObjectType):
     longitude = graphene.Float(description='Longitude value.')
 
 
-class ONGType(graphene.ObjectType):
+class ONGType(DjangoObjectType):
     """
     Defines a GraphQL structure for an `ONG`.
     """
     class Meta:
+        model = Ong
         interfaces = (graphene.relay.Node,)
+        filter_fields = {
+            'name': ['exact', 'icontains', 'in'],
+            'cnas': ['exact', 'in'],
+            'federal_public_utility_certificate__cnpj': ['exact', 'in'],
+            'federal_public_utility_certificate__mj_process': ['exact', 'in'],
+            'state_public_utility_certificate__cnpj': ['exact', 'in'],
+            'state_public_utility_certificate__mj_process': ['exact', 'in'],
+            'municipal_public_utility_certificate__cnpj': ['exact', 'in'],
+            'municipal_public_utility_certificate__mj_process': ['exact', 'in'],
+            'phone_contact': ['exact', 'in'],
+            'address': ['exact', 'in', 'icontains'],
+            'country': ['exact', 'in', 'icontains'],
+            'state': ['exact', 'in', 'icontains'],
+            'city': ['exact', 'in', 'icontains'],
+        }
 
     name = graphene.String(description='ONG name or reference.')
     cnas = graphene.Field(CNASType, description='CNAS register number')
@@ -89,35 +110,26 @@ class ONGType(graphene.ObjectType):
 
 
 ##########################################################################
-# QUERY
+# InputTypes, Relay COnnections and other schema support stuff
 ##########################################################################
 class ONGConnection(graphene.relay.Connection):
     class Meta:
         node = ONGType
 
+    nodes = graphene.List(ONGType)
+    count = graphene.Int(description='Number of registered elements.')
+    total = graphene.Int(description='Total number of registered elements.')
 
-class Query:
-    """
-    Gifty main queries.
-    """
-    node = graphene.relay.Node.Field()
+    def resolve_nodes(self, info, **kwargs):
+        return [item.node for item in self.edges]
 
-    # Version
-    version = graphene.String(description='Returns the service version!')
+    def resolve_count(self, info, **kwargs):
+        return len(self.edges)
 
-    def resolve_version(self, info, **kwargs):
-        return settings.VERSION
-
-    # ONGs
-    ongs = graphene.relay.ConnectionField(ONGConnection)
-
-    def resolve_ongs(self, info, *kwargs):
-        return Ong.objects.all()
+    def resolve_total(self, info, **kwargs):
+        return len(self.iterable)
 
 
-##########################################################################
-# MUTATIONS
-##########################################################################
 class GeolocationInput(graphene.InputObjectType):
     latitude = graphene.Float(description='Latitude value.')
     longitude = graphene.Float(description='Longitude value.')
@@ -138,6 +150,39 @@ class MunicipalPublicUtilityCertificateInput(graphene.InputObjectType):
     mj_process = graphene.String(description='MJ process number.')
 
 
+##########################################################################
+# QUERY
+##########################################################################
+class Query:
+    """
+    Gifty main queries.
+    """
+    node = graphene.relay.Node.Field()
+
+    # Version
+    version = graphene.String(description='Returns the service version!')
+
+    def resolve_version(self, info, **kwargs):
+        return settings.VERSION
+
+    # ONGs
+    ongs = DjangoFilterConnectionField(
+        ONGType,
+        orderBy=graphene.String(description='Order results by field name.')
+    )
+
+    def resolve_ongs(self, info, **kwargs):
+        ordenation = kwargs.pop('orderBy', 'id')  # id is default
+
+        if not kwargs:
+            return Ong.objects.all().order_by(ordenation)
+
+        return Ong.objects.filter(**kwargs).order_by(ordenation)
+
+
+##########################################################################
+# MUTATIONS
+##########################################################################
 class CreateOng(graphene.relay.ClientIDMutation):
     """
     Creates a ong on database.
