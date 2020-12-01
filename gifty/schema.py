@@ -10,15 +10,6 @@ from gifty.models import (Ong, FederalPublicUtilityCertificate,
 ##########################################################################
 # Object types
 ##########################################################################
-class CNASType(graphene.ObjectType):
-    """
-    Defines a CNAS register GraphQL structure.
-    CNAS stands for `Conselho Nacional de Assistência Social`
-                     (National Social Assistance Council)
-    """
-    registration_number = graphene.String(description='Registration number.')
-
-
 class FederalPublicUtilityCertificateType(graphene.ObjectType):
     """
     Defines a Federal Public Utility Certificate Graphql structure
@@ -60,7 +51,6 @@ class ONGType(DjangoObjectType):
         interfaces = (graphene.relay.Node,)
         filter_fields = {
             'name': ['exact', 'icontains', 'in'],
-            'cnas': ['exact', 'in'],
             'federal_public_utility_certificate__cnpj': ['exact', 'in'],
             'federal_public_utility_certificate__mj_process': ['exact', 'in'],
             'state_public_utility_certificate__cnpj': ['exact', 'in'],
@@ -75,7 +65,6 @@ class ONGType(DjangoObjectType):
         }
 
     name = graphene.String(description='ONG name or reference.')
-    cnas = graphene.Field(CNASType, description='CNAS register number')
     federal_public_utility_certificate = graphene.Field(
         FederalPublicUtilityCertificateType,
         description='Federal Public Utility Certificate register.'
@@ -97,7 +86,8 @@ class ONGType(DjangoObjectType):
         GeolocationType,
         description='ONG location points'
     )
-    description = graphene.String(description='ONG description.')
+    short_description = graphene.String(description='ONG short description.')
+    description = graphene.String(description='ONG full description.')
     donation_link = graphene.String(
         description='Link for donation contributions.'
     )
@@ -197,7 +187,6 @@ class CreateOng(graphene.relay.ClientIDMutation):
             required=True
         )
         # TODO: add descriptions
-        cnas_registration_number = graphene.String(required=True)
         phone_contact = graphene.String(required=True)
         address = graphene.String(
             required=True,
@@ -221,17 +210,15 @@ class CreateOng(graphene.relay.ClientIDMutation):
         )
         federal_public_utility_certificate = graphene.Argument(
             FederalPublicUtilityCertificateInput,
-            required=True
         )
         state_public_utility_certificate = graphene.Argument(
             FederalPublicUtilityCertificateInput,
-            required=True
         )
         municipal_public_utility_certificate = graphene.Argument(
             MunicipalPublicUtilityCertificateInput,
-            required=True
         )
         description=graphene.String()
+        short_description=graphene.String()
         donation_link=graphene.String()
 
 
@@ -240,35 +227,42 @@ class CreateOng(graphene.relay.ClientIDMutation):
         geolocation = kwargs.get('geolocation',  {})
 
         # create the certificate first
-        try:
-            federal_certificate = FederalPublicUtilityCertificate(
-                **kwargs.get('federal_public_utility_certificate', {})
-            )
-        except Exception as exception:  # TODO write a better handler
-            raise Exception(exception)
+        if kwargs.get('federal_public_utility_certificate'):
+            try:
+                federal_certificate = FederalPublicUtilityCertificate(
+                    **kwargs.get('federal_public_utility_certificate')
+                )
+            except Exception as exception:  # TODO write a better handler
+                raise Exception(exception)
+            federal_certificate.save()
+        else:
+            federal_certificate = None
 
-        try:
-            state_certificate = StatePublicUtilityCertificate(
-                **kwargs.get('state_public_utility_certificate', {})
-            )
-        except Exception as exception:  # TODO write a better handler
-            raise Exception(exception)
+        if kwargs.get('state_public_utility_certificate'):
+            try:
+                state_certificate = StatePublicUtilityCertificate(
+                    **kwargs.get('state_public_utility_certificate')
+                )
+            except Exception as exception:  # TODO write a better handler
+                raise Exception(exception)
+            state_certificate.save()
+        else:
+            state_certificate = None
 
-        try:
-            municipal_certificate = MunicipalPublicUtilityCertificate(
-                **kwargs.get('municipal_public_utility_certificate', {})
-            )
-        except Exception as exception:  # TODO write a better handler
-            raise Exception(exception)
-
-        federal_certificate.save()
-        state_certificate.save()
-        municipal_certificate.save()
+        if kwargs.get('municipal_public_utility_certificate'):
+            try:
+                municipal_certificate = MunicipalPublicUtilityCertificate(
+                    **kwargs.get('municipal_public_utility_certificate')
+                )
+            except Exception as exception:  # TODO write a better handler
+                raise Exception(exception)
+            municipal_certificate.save()
+        else:
+            municipal_certificate = None
 
         try:
             ong = Ong.objects.create(
                 name=kwargs.get('name'),
-                cnas=kwargs.get('cnas_registration_number'),
                 phone_contact=kwargs.get('phone_contact'),
                 address=kwargs.get('address'),
                 country=kwargs.get('country'),
@@ -280,6 +274,7 @@ class CreateOng(graphene.relay.ClientIDMutation):
                 state_public_utility_certificate=state_certificate,
                 municipal_public_utility_certificate=municipal_certificate,
                 description=kwargs.get('description'),
+                short_description=kwargs.get('short_description'),
                 donation_link=kwargs.get('donation_link')
             )
 

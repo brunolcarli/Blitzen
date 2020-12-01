@@ -30,7 +30,6 @@ class Ong(models.Model):
     Defines a `ONG` table.
     """
     name = models.CharField(max_length=50, null=False, blank=False)
-    cnas = models.CharField(max_length=50, null=False, blank=False)
     federal_public_utility_certificate = models.ForeignKey(
         FederalPublicUtilityCertificate,
         on_delete=models.CASCADE,
@@ -53,5 +52,6 @@ class Ong(models.Model):
     city = models.CharField(max_length=50, null=False, blank=False)
     latitude = models.FloatField()
     longitude = models.FloatField()
+    short_description = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     donation_link = models.TextField(null=True, blank=True)
