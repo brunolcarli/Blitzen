@@ -14,7 +14,7 @@
 
 <div align="center">
 
-> [![Version badge](https://img.shields.io/badge/version-0.1.1-silver.svg)](https://blitzen.brunolcarli.repl.co/graphql/)
+> [![Version badge](https://img.shields.io/badge/version-0.2.0-silver.svg)](https://blitzen.brunolcarli.repl.co/graphql/)
 
 >[![GraphQl Badge](https://badgen.net/badge/icon/graphql/pink?icon=graphql&label)](https://blitzen.brunolcarli.repl.co/graphql/)
 [![Docs Link](https://badgen.net/badge/docs/github_wiki?icon=github)](https://github.com/brunolcarli/Blitzen/wiki)
